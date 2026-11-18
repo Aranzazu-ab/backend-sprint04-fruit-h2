@@ -2,6 +2,7 @@ package cat.itacademy.s04.t01.fruitapih2.services;
 
 import cat.itacademy.s04.t01.fruitapih2.dto.FruitRequestDto;
 import cat.itacademy.s04.t01.fruitapih2.dto.FruitResponseDto;
+import cat.itacademy.s04.t01.fruitapih2.exception.FruitNotFoundException;
 import cat.itacademy.s04.t01.fruitapih2.model.Fruit;
 import cat.itacademy.s04.t01.fruitapih2.repository.FruitRepository;
 import org.springframework.stereotype.Service;
@@ -39,5 +40,13 @@ public class FruitServiceImpl implements FruitService {
                         fruit.getWeightInKg()
                 ))
                 .toList();
+    }
+
+    @Override
+    public FruitResponseDto getFruitById(Long id) {
+        Fruit fruit= fruitRepository.findById(id)
+                .orElseThrow(()-> new FruitNotFoundException("Fruit not found with id: "+ id));
+
+        return new FruitResponseDto(fruit.getId(), fruit.getName(), fruit.getWeightInKg());
     }
 }

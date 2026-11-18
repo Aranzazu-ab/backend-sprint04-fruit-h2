@@ -8,4 +8,5 @@ import java.util.List;
 public interface FruitService {
     FruitResponseDto createFruit (FruitRequestDto requestDto);
     List<FruitResponseDto> getAllFruits ();
+    FruitResponseDto getFruitById (Long Id);
 }
