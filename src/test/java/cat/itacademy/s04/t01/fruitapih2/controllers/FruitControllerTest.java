@@ -2,6 +2,7 @@ package cat.itacademy.s04.t01.fruitapih2.controllers;
 
 import cat.itacademy.s04.t01.fruitapih2.model.Fruit;
 import cat.itacademy.s04.t01.fruitapih2.repository.FruitRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -22,6 +23,11 @@ public class FruitControllerTest {
 
     @Autowired
     private FruitRepository fruitRepository;
+
+    @BeforeEach
+    void setUp() {
+        fruitRepository.deleteAll();
+    }
 
     @Test
     void shouldReturnIsCreatedWhenPostFruit() throws Exception{
@@ -54,8 +60,6 @@ public class FruitControllerTest {
 
     @Test
     void shouldReturnListOfFruitsWhenTheyExist() throws Exception{
-        fruitRepository.deleteAll();
-
         Fruit apple = new Fruit();
         apple.setName("Apple");
         apple.setWeightInKg(5);
@@ -74,13 +78,36 @@ public class FruitControllerTest {
 
     @Test
     void shouldReturnEmptyArrayWhenNoFruitsExist() throws Exception {
-        fruitRepository.deleteAll();
 
         mockMvc.perform(get("/fruits"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$").isEmpty());
 
+    }
+
+    @Test
+    void shouldReturnFruitWhenIdExists() throws Exception {
+        Fruit apple = new Fruit();
+        apple.setName("Apple");
+        apple.setWeightInKg(5);
+        Fruit fruitSaved = fruitRepository.save(apple);
+        Long id = fruitSaved.getId();
+
+        mockMvc.perform(get("/fruits/" + id))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value("id"))
+                .andExpect(jsonPath("$.name").value("Apple"))
+                .andExpect(jsonPath("$.weightInKg").value(5));
+    }
+
+    @Test
+    void shouldReturn404WhenIdDoesNotExist() throws Exception {
+
+        mockMvc.perform(get("/fruits/000"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.message").exists());
     }
 
 
