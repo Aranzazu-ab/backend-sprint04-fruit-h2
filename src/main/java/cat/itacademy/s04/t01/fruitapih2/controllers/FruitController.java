@@ -6,11 +6,12 @@ import cat.itacademy.s04.t01.fruitapih2.services.FruitService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
+@RequestMapping("/fruits")
 public class FruitController {
     private final FruitService fruitService;
 
@@ -18,11 +19,17 @@ public class FruitController {
         this.fruitService = fruitService;
     }
 
-    @PostMapping("/fruits")
+    @PostMapping
     public ResponseEntity<FruitResponseDto> createFruit (@Valid @RequestBody FruitRequestDto requestDto){
         FruitResponseDto responseDto = fruitService.createFruit(requestDto);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<FruitResponseDto>> getAllFruits(){
+        List<FruitResponseDto> fruits = fruitService.getAllFruits();
+        return ResponseEntity.ok(fruits);
     }
 
 }

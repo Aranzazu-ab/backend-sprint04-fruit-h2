@@ -1,5 +1,6 @@
 package cat.itacademy.s04.t01.fruitapih2.controllers;
 
+import cat.itacademy.s04.t01.fruitapih2.model.Fruit;
 import cat.itacademy.s04.t01.fruitapih2.repository.FruitRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +9,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -22,7 +24,7 @@ public class FruitControllerTest {
     private FruitRepository fruitRepository;
 
     @Test
-    void createFruitShouldSaveIt() throws Exception{
+    void shouldReturnIsCreatedWhenPostFruit() throws Exception{
         String body = """
                 {"name": "apples", "weightInKg": 5}
                 """;
@@ -37,7 +39,7 @@ public class FruitControllerTest {
     }
 
     @Test
-    void createFruitShouldReturn400WhenDataInvalid() throws Exception{
+    void shouldReturn400WhenDataInvalid() throws Exception{
         String body= """
                 {"name":"", "weightInKg": 0 }
                 """;
@@ -48,6 +50,37 @@ public class FruitControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.message").exists());
+    }
+
+    @Test
+    void shouldReturnListOfFruitsWhenTheyExist() throws Exception{
+        fruitRepository.deleteAll();
+
+        Fruit apple = new Fruit();
+        apple.setName("Apple");
+        apple.setWeightInKg(5);
+        fruitRepository.save(apple);
+
+        Fruit banana = new Fruit();
+        banana.setName("Banana");
+        banana.setWeightInKg(8);
+        fruitRepository.save(banana);
+
+        mockMvc.perform(get("/fruits"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.size()").value(2));
+    }
+
+    @Test
+    void shouldReturnEmptyArrayWhenNoFruitsExist() throws Exception {
+        fruitRepository.deleteAll();
+
+        mockMvc.perform(get("/fruits"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$").isEmpty());
+
     }
 
 
