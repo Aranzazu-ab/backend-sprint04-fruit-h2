@@ -32,6 +32,23 @@ public class FruitControllerTest {
                         .content(body))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").isNotEmpty())
-                .andExpect(jsonPath("$.name").value("apples"));
+                .andExpect(jsonPath("$.name").value("apples"))
+                .andExpect(jsonPath("$.weightInKg").value(5));
     }
+
+    @Test
+    void createFruitShouldReturn400WhenDataInvalid() throws Exception{
+        String body= """
+                {"name":"", "weightInKg": 0 }
+                """;
+
+        mockMvc.perform(post("/fruits")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message").exists());
+    }
+
+
 }
