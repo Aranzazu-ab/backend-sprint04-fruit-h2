@@ -10,6 +10,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -154,5 +155,27 @@ public class FruitControllerTest {
                         .content(invalidBody))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400));
+    }
+
+    @Test
+    void shouldReturn204AndDeleteFruitWhenIdExists() throws Exception {
+        Fruit apple = new Fruit();
+        apple.setName("Apple");
+        apple.setWeightInKg(5);
+        Fruit fruitSaved = fruitRepository.save(apple);
+        Long id = fruitSaved.getId();
+
+        mockMvc.perform(delete("/fruits/" + id))
+                .andExpect(status().isNoContent());
+
+        assertTrue(fruitRepository.findById(id).isEmpty());
+    }
+
+    @Test
+    void shouldReturn404WhenDeletingNonExistentId() throws Exception {
+        mockMvc.perform(delete("/fruits/000"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.message").exists());
     }
 }
