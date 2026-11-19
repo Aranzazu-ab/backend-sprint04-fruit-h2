@@ -10,8 +10,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -96,7 +95,7 @@ public class FruitControllerTest {
 
         mockMvc.perform(get("/fruits/" + id))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value("id"))
+                .andExpect(jsonPath("$.id").value(id))
                 .andExpect(jsonPath("$.name").value("Apple"))
                 .andExpect(jsonPath("$.weightInKg").value(5));
     }
@@ -110,5 +109,50 @@ public class FruitControllerTest {
                 .andExpect(jsonPath("$.message").exists());
     }
 
+    @Test
+    void shouldReturn200AndUpdatedFruitWhenPut() throws Exception {
+        Fruit apple = new Fruit();
+        apple.setName("Apple");
+        apple.setWeightInKg(5);
+        Fruit fruitSaved = fruitRepository.save(apple);
 
+        String updateBody = """
+            {"name": "Green Apple", "weightInKg": 10}
+            """;
+
+        mockMvc.perform(put("/fruits/" + fruitSaved.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updateBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(fruitSaved.getId()))
+                .andExpect(jsonPath("$.name").value("Green Apple"))
+                .andExpect(jsonPath("$.weightInKg").value(10));
+
+    }
+
+    @Test
+    void shouldReturn404WhenUpdatingIdInvalid () throws Exception {
+        String updateBody = """
+            {"name": "Ghost Fruit", "weightInKg": 5}
+            """;
+
+        mockMvc.perform(put("/fruits/00")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updateBody))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404));
+    }
+
+    @Test
+    void shouldReturn400WhenUpdatingDataInvalid() throws Exception {
+        String invalidBody = """
+            {"name": "", "weightInKg": -5}
+            """;
+
+        mockMvc.perform(put("/fruits/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(invalidBody))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400));
+    }
 }

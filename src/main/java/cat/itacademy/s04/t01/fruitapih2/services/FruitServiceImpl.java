@@ -49,4 +49,17 @@ public class FruitServiceImpl implements FruitService {
 
         return new FruitResponseDto(fruit.getId(), fruit.getName(), fruit.getWeightInKg());
     }
+
+    @Override
+    public FruitResponseDto updateFruit(Long id, FruitRequestDto requestDto) {
+        Fruit fruit = fruitRepository.findById(id)
+                .orElseThrow(() -> new FruitNotFoundException("Fruit not found with id: " + id));
+
+        fruit.setName(requestDto.name());
+        fruit.setWeightInKg(requestDto.weightInKg());
+        Fruit updatedFruit = fruitRepository.save(fruit);
+
+        return new FruitResponseDto(updatedFruit.getId(), updatedFruit.getName(), updatedFruit.getWeightInKg());
+    }
+
 }
